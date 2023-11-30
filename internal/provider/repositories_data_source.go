@@ -109,7 +109,7 @@ func (d *repositoryDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Read HashiCups Coffees",
+			"Unable to Read DependencyTrack Repositories",
 			err.Error(),
 		)
 		return
