@@ -2,29 +2,39 @@ package provider
 
 import (
 	"context"
+	"os"
 
+	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ provider.Provider = &hashicupsProvider{}
+	_ provider.Provider = &dependencytrackProvider{}
 )
+
+// dependencytrackProviderModel maps provider schema data to a Go type.
+type dependencytrackProviderModel struct {
+	Host  types.String `tfsdk:"host"`
+	Token types.String `tfsdk:"token"`
+}
 
 // New is a helper function to simplify provider server and testing implementation.
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &hashicupsProvider{
+		return &dependencytrackProvider{
 			version: version,
 		}
 	}
 }
 
-// hashicupsProvider is the provider implementation.
-type hashicupsProvider struct {
+// dependencytrackProvider is the provider implementation.
+type dependencytrackProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
@@ -32,26 +42,128 @@ type hashicupsProvider struct {
 }
 
 // Metadata returns the provider type name.
-func (p *hashicupsProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "dependency-track"
+func (p *dependencytrackProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "dependencytrack"
 	resp.Version = p.version
 }
 
 // Schema defines the provider-level schema for configuration data.
-func (p *hashicupsProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
-	resp.Schema = schema.Schema{}
+func (p *dependencytrackProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"host": schema.StringAttribute{
+				Optional: true,
+			},
+			"token": schema.StringAttribute{
+				Optional:  true,
+				Sensitive: true,
+			},
+		},
+	}
 }
 
-// Configure prepares a HashiCups API client for data sources and resources.
-func (p *hashicupsProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+// Configure prepares a DependencyTrack API client for data sources and resources.
+func (p *dependencytrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	// Retrieve provider data from configuration
+	var config dependencytrackProviderModel
+	diags := req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If practitioner provided a configuration value for any of the
+	// attributes, it must be a known value.
+
+	if config.Host.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("host"),
+			"Unknown DependencyTrack API Host",
+			"The provider cannot create the DependencyTrack API client as there is an unknown configuration value for the DependencyTrack API host. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the DEPENDENCY_TRACK_HOST environment variable.",
+		)
+	}
+
+	if config.Token.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("token"),
+			"Unknown DependencyTrack API Token",
+			"The provider cannot create the DependencyTrack API client as there is an unknown configuration value for the DependencyTrack API token. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the DEPENDENCY_TRACK_TOKEN environment variable.",
+		)
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Default values to environment variables, but override
+	// with Terraform configuration value if set.
+
+	host := os.Getenv("DEPENDENCY_TRACK_HOST")
+	token := os.Getenv("DEPENDENCY_TRACK_TOKEN")
+
+	if !config.Host.IsNull() {
+		host = config.Host.ValueString()
+	}
+
+	if !config.Token.IsNull() {
+		token = config.Token.ValueString()
+	}
+
+	// If any of the expected configurations are missing, return
+	// errors with provider-specific guidance.
+
+	if host == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("host"),
+			"Missing DependencyTrack API Host",
+			"The provider cannot create the DependencyTrack API client as there is a missing or empty value for the DependencyTrack API host. "+
+				"Set the host value in the configuration or use the DEPENDENCY_TRACK_HOST environment variable. "+
+				"If either is already set, ensure the value is not empty.",
+		)
+	}
+
+	if token == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("token"),
+			"Missing DependencyTrack API Token",
+			"The provider cannot create the DependencyTrack API client as there is a missing or empty value for the DependencyTrack API token. "+
+				"Set the token value in the configuration or use the DEPENDENCY_TRACK_TOKEN environment variable. "+
+				"If either is already set, ensure the value is not empty.",
+		)
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Create a new DependencyTrack client using the configuration values
+	client, err := dtrack.NewClient(host, dtrack.WithAPIKey(token))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create DependencyTrack API Client",
+			"An unexpected error occurred when creating the DependencyTrack API client. "+
+				"If the error is not clear, please contact the provider developers.\n\n"+
+				"DependencyTrack Client Error: "+err.Error(),
+		)
+		return
+	}
+
+	// Make the DependencyTrack client available during DataSource and Resource
+	// type Configure methods.
+	resp.DataSourceData = client
+	resp.ResourceData = client
 }
 
 // DataSources defines the data sources implemented in the provider.
-func (p *hashicupsProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return nil
+func (p *dependencytrackProvider) DataSources(_ context.Context) []func() datasource.DataSource {
+	return []func() datasource.DataSource{
+		NewRepositoryDataSource,
+	}
 }
 
 // Resources defines the resources implemented in the provider.
-func (p *hashicupsProvider) Resources(_ context.Context) []func() resource.Resource {
+func (p *dependencytrackProvider) Resources(_ context.Context) []func() resource.Resource {
 	return nil
 }

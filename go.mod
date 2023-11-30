@@ -1,8 +1,9 @@
-module github.com/bakito/terraform-provider-dependency-track
+module github.com/bakito/terraform-provider-dependencytrack
 
 go 1.21
 
 require (
+	github.com/DependencyTrack/client-go v0.0.0-00010101000000-000000000000
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
 	github.com/hashicorp/terraform-plugin-framework v1.4.2
 	github.com/hashicorp/terraform-plugin-go v0.19.1
@@ -72,3 +73,5 @@ require (
 	google.golang.org/grpc v1.59.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )
+
+replace github.com/DependencyTrack/client-go => github.com/bakito/client-go v0.0.0-20231129171042-d2ae09b65764

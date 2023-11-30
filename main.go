@@ -8,7 +8,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/bakito/terraform-provider-dependency-track/internal/provider"
+	"github.com/bakito/terraform-provider-dependencytrack/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
@@ -38,8 +38,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		// FIXME update address
-		Address: "github.com/bakito/terraform-provider-dependency-track",
+		Address: "registry.terraform.io/hashicorp/dependencytrack",
 		Debug:   debug,
 	}
 
