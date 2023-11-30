@@ -15,7 +15,3 @@ resource "dependencytrack_repository" "foo" {
   enabled    = true
   type       = "CPAN"
 }
-
-output "edu_repo" {
-  value = dependencytrack_repository.foo
-}

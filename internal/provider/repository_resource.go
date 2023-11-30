@@ -3,11 +3,17 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"strings"
 	"time"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -58,30 +64,46 @@ func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"identifier": schema.StringAttribute{
 				Required: true,
 			},
 			"type": schema.StringAttribute{
-				Required: true,
+				Required:   true,
+				Validators: []validator.String{&repositoryTypeValidator{}},
 			},
 			"url": schema.StringAttribute{
 				Required: true,
 			},
 			"resolution_order": schema.Int64Attribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"enabled": schema.BoolAttribute{
 				Required: true,
 			},
 			"internal": schema.BoolAttribute{
 				Optional: true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"username": schema.StringAttribute{
 				Optional: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -98,7 +120,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	repository := dtrack.Repository{
-		Type:       plan.Type.ValueString(),
+		Type:       dtrack.RepositoryType(plan.Type.ValueString()),
 		Identifier: plan.Identifier.ValueString(),
 		Url:        plan.Url.ValueString(),
 		Enabled:    plan.Enabled.ValueBool(),
@@ -141,7 +163,7 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	// Get refreshed order value from DependencyTrack
 	repos, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Repository], error) {
-		return r.client.Repository.GetAll(ctx, po)
+		return r.client.Repository.GetByType(ctx, dtrack.RepositoryType(state.Type.ValueString()), po)
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -165,14 +187,17 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	// Overwrite items with refreshed state
 
 	state.ID = types.StringValue(repo.UUID.String())
-	state.Type = types.StringValue(repo.Type)
+	state.Type = types.StringValue(string(repo.Type))
 	state.Identifier = types.StringValue(repo.Identifier)
 	state.Url = types.StringValue(repo.Url)
 	state.ResolutionOrder = types.Int64Value(int64(repo.ResolutionOrder))
 	state.Enabled = types.BoolValue(repo.Enabled)
-	state.Internal = types.BoolValue(repo.Internal)
-	state.Username = types.StringValue(repo.Username)
-
+	if repo.Internal {
+		state.Internal = types.BoolValue(repo.Internal)
+	}
+	if repo.Username != "" {
+		state.Username = types.StringValue(repo.Username)
+	}
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -187,4 +212,30 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 
 // Delete deletes the repository and removes the Terraform state on success.
 func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+}
+
+var repositoryTypes = []string{"CPAN", "MAVEN", "NPM", "GEM", "PYPI", "NUGET", "HEX", "COMPOSER", "CARGO", "GO_MODULES", "UNSUPPORTED"}
+
+type repositoryTypeValidator struct {
+}
+
+func (r repositoryTypeValidator) Description(_ context.Context) string {
+	return fmt.Sprintf("Available Type Values: %s", strings.Join(repositoryTypes, ", "))
+}
+
+func (r repositoryTypeValidator) MarkdownDescription(_ context.Context) string {
+	return fmt.Sprintf("# Available Type Values: %s\n\n- ", strings.Join(repositoryTypes, "\n- "))
+}
+
+func (r repositoryTypeValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	tp := req.ConfigValue.ValueString()
+	for _, t := range repositoryTypes {
+		if t == tp {
+			return
+		}
+	}
+	resp.Diagnostics.AddError(
+		fmt.Sprintf("Unknown Repository Type: %q", tp),
+		r.Description(ctx),
+	)
 }

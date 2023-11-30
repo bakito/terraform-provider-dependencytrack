@@ -120,7 +120,7 @@ func (d *repositoryDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	for _, repo := range repos {
 		repositoryState := repositoryModel{
 			ID:              types.StringValue(repo.UUID.String()),
-			Type:            types.StringValue(repo.Type),
+			Type:            types.StringValue(string(repo.Type)),
 			Identifier:      types.StringValue(repo.Identifier),
 			Url:             types.StringValue(repo.Url),
 			ResolutionOrder: types.Int64Value(int64(repo.ResolutionOrder)),
