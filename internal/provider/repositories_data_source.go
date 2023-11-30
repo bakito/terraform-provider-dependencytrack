@@ -38,6 +38,7 @@ type repositoryModel struct {
 	Enabled         types.Bool   `tfsdk:"enabled"`
 	Internal        types.Bool   `tfsdk:"internal"`
 	Username        types.String `tfsdk:"username"`
+	LastUpdated     types.String `tfsdk:"last_updated"`
 }
 
 func (d *repositoryDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

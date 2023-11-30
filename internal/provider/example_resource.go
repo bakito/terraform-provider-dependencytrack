@@ -26,12 +26,12 @@ func NewExampleResource() resource.Resource {
 	return &ExampleResource{}
 }
 
-// ExampleResource defines the resource implementation.
+// ExampleResource defines the repository implementation.
 type ExampleResource struct {
 	client *http.Client
 }
 
-// ExampleResourceModel describes the resource data model.
+// ExampleResourceModel describes the repository data model.
 type ExampleResourceModel struct {
 	ConfigurableAttribute types.String `tfsdk:"configurable_attribute"`
 	Defaulted             types.String `tfsdk:"defaulted"`
@@ -45,7 +45,7 @@ func (r *ExampleResource) Metadata(ctx context.Context, req resource.MetadataReq
 func (r *ExampleResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Example resource",
+		MarkdownDescription: "Example repository",
 
 		Attributes: map[string]schema.Attribute{
 			"configurable_attribute": schema.StringAttribute{
@@ -113,7 +113,7 @@ func (r *ExampleResource) Create(ctx context.Context, req resource.CreateRequest
 
 	// Write logs using the tflog package
 	// Documentation: https://terraform.io/plugin/log
-	tflog.Trace(ctx, "created a resource")
+	tflog.Trace(ctx, "created a repository")
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
