@@ -38,8 +38,8 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		// TODO: Update this string with the published name of your provider.
-		Address: "registry.terraform.io/hashicorp/scaffolding",
+		// FIXME update address
+		Address: "github.com/bakito/terraform-provider-dependency-track",
 		Debug:   debug,
 	}
 
