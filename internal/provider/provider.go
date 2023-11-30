@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -64,6 +65,7 @@ func (p *dependencytrackProvider) Schema(_ context.Context, _ provider.SchemaReq
 
 // Configure prepares a DependencyTrack API client for data sources and resources.
 func (p *dependencytrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	tflog.Info(ctx, "Configuring DependencyTrack client")
 	// Retrieve provider data from configuration
 	var config dependencytrackProviderModel
 	diags := req.Config.Get(ctx, &config)
@@ -137,6 +139,12 @@ func (p *dependencytrackProvider) Configure(ctx context.Context, req provider.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "dependencytrack_host", host)
+	ctx = tflog.SetField(ctx, "dependencytrack_token", token)
+	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "dependencytrack_token")
+
+	tflog.Debug(ctx, "Creating DependencyTrack client")
 
 	// Create a new DependencyTrack client using the configuration values
 	client, err := dtrack.NewClient(host, dtrack.WithAPIKey(token))
