@@ -8,7 +8,6 @@ terraform {
 
 provider "dependencytrack" {}
 
-
 resource "dependencytrack_repository" "foo" {
   url        = "https://foo.bar"
   identifier = "foo"

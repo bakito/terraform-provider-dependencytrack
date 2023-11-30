@@ -3,16 +3,17 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"strings"
 	"time"
 
 	dtrack "github.com/DependencyTrack/client-go"
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -70,9 +71,6 @@ func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 			"last_updated": schema.StringAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"identifier": schema.StringAttribute{
 				Required: true,
@@ -208,10 +206,65 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 
 // Update updates the repository and sets the updated Terraform state on success.
 func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+
+	// Retrieve values from plan
+	var plan repositoryModel
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	repository := dtrack.Repository{
+		UUID:       uuid.MustParse(plan.ID.ValueString()),
+		Type:       dtrack.RepositoryType(plan.Type.ValueString()),
+		Identifier: plan.Identifier.ValueString(),
+		Url:        plan.Url.ValueString(),
+		Enabled:    plan.Enabled.ValueBool(),
+		Internal:   plan.Internal.ValueBool(),
+		Username:   plan.Username.ValueString(),
+	}
+
+	// Update existing repository
+	result, err := r.client.Repository.Update(ctx, repository)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error updating repository",
+			"Could not update repository, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	// Map response body to schema and populate Computed attribute values
+	plan.ResolutionOrder = types.Int64Value(int64(result.ResolutionOrder))
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	diags = resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Delete deletes the repository and removes the Terraform state on success.
 func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// Retrieve values from state
+	var state repositoryModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Delete existing order
+	err := r.client.Repository.Delete(ctx, state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Deleting DependnecyTrack Repository",
+			"Could not delete repository, unexpected error: "+err.Error(),
+		)
+		return
+	}
 }
 
 var repositoryTypes = []string{"CPAN", "MAVEN", "NPM", "GEM", "PYPI", "NUGET", "HEX", "COMPOSER", "CARGO", "GO_MODULES", "UNSUPPORTED"}
