@@ -23,7 +23,9 @@ func (r repositoryTypeValidator) MarkdownDescription(_ context.Context) string {
 
 func (r repositoryTypeValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
 	tp := req.ConfigValue.ValueString()
-
+	if tp == "" {
+		return
+	}
 	for _, t := range repositoryTypes {
 		if t == tp {
 			return
