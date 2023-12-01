@@ -3,11 +3,11 @@ package provider
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -20,8 +20,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &repositoryResource{}
-	_ resource.ResourceWithConfigure = &repositoryResource{}
+	_ resource.Resource                = &repositoryResource{}
+	_ resource.ResourceWithConfigure   = &repositoryResource{}
+	_ resource.ResourceWithImportState = &repositoryResource{}
 )
 
 // NewRepositoryResource is a helper function to simplify the provider implementation.
@@ -29,12 +30,7 @@ func NewRepositoryResource() resource.Resource {
 	return &repositoryResource{}
 }
 
-// repositoryResource is the repository implementation.
-type repositoryResource struct {
-	client *dtrack.Client
-}
-
-// Configure adds the provider configured client to the repository.
+// Configure adds the provider configured client to the resource.
 func (r *repositoryResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
@@ -59,7 +55,7 @@ func (r *repositoryResource) Metadata(_ context.Context, req resource.MetadataRe
 	resp.TypeName = req.ProviderTypeName + "_repository"
 }
 
-// Schema defines the schema for the repository.
+// Schema defines the schema for the resource.
 func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -103,6 +99,13 @@ func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"password": schema.StringAttribute{
+				Optional:  true,
+				Sensitive: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -124,6 +127,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		Enabled:    plan.Enabled.ValueBool(),
 		Internal:   plan.Internal.ValueBool(),
 		Username:   plan.Username.ValueString(),
+		Password:   plan.Password.ValueString(),
 	}
 
 	// Create new repository
@@ -173,17 +177,17 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	var repo *dtrack.Repository
 	for i := range repos {
-		repo = &repos[i]
+		r := repos[i]
+		if state.ID.ValueString() == r.UUID.String() {
+			repo = &r
+		}
 	}
 	if repo == nil {
-		resp.Diagnostics.AddError(
-			"Error Reading DependencyTrack Repositories",
-			"Could not read DependencyTrack repository ID "+state.ID.ValueString()+": "+err.Error(),
-		)
+		resp.State.RemoveResource(ctx)
 		return
 	}
-	// Overwrite items with refreshed state
 
+	// Overwrite items with refreshed state
 	state.ID = types.StringValue(repo.UUID.String())
 	state.Type = types.StringValue(string(repo.Type))
 	state.Identifier = types.StringValue(repo.Identifier)
@@ -195,6 +199,9 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 	if repo.Username != "" {
 		state.Username = types.StringValue(repo.Username)
+	}
+	if repo.Password != "" {
+		state.Password = types.StringValue(repo.Password)
 	}
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -223,6 +230,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		Enabled:    plan.Enabled.ValueBool(),
 		Internal:   plan.Internal.ValueBool(),
 		Username:   plan.Username.ValueString(),
+		Password:   plan.Password.ValueString(),
 	}
 
 	// Update existing repository
@@ -260,35 +268,14 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	err := r.client.Repository.Delete(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Deleting DependnecyTrack Repository",
+			"Error Deleting DependencyTrack Repository",
 			"Could not delete repository, unexpected error: "+err.Error(),
 		)
 		return
 	}
 }
 
-var repositoryTypes = []string{"CPAN", "MAVEN", "NPM", "GEM", "PYPI", "NUGET", "HEX", "COMPOSER", "CARGO", "GO_MODULES", "UNSUPPORTED"}
-
-type repositoryTypeValidator struct {
-}
-
-func (r repositoryTypeValidator) Description(_ context.Context) string {
-	return fmt.Sprintf("Available Type Values: %s", strings.Join(repositoryTypes, ", "))
-}
-
-func (r repositoryTypeValidator) MarkdownDescription(_ context.Context) string {
-	return fmt.Sprintf("# Available Type Values: %s\n\n- ", strings.Join(repositoryTypes, "\n- "))
-}
-
-func (r repositoryTypeValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
-	tp := req.ConfigValue.ValueString()
-	for _, t := range repositoryTypes {
-		if t == tp {
-			return
-		}
-	}
-	resp.Diagnostics.AddError(
-		fmt.Sprintf("Unknown Repository Type: %q", tp),
-		r.Description(ctx),
-	)
+func (r *repositoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import ID and save to id attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

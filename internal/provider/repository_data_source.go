@@ -19,28 +19,6 @@ func NewRepositoryDataSource() datasource.DataSource {
 	return &repositoryDataSource{}
 }
 
-type repositoryDataSource struct {
-	client *dtrack.Client
-}
-
-// repositoryDataSourceModel maps the data source schema data.
-type repositoryDataSourceModel struct {
-	Repositories []repositoryModel `tfsdk:"repositories"`
-}
-
-// repositoryModel maps repository schema data.
-type repositoryModel struct {
-	ID              types.String `tfsdk:"id"`
-	Type            types.String `tfsdk:"type"`
-	Identifier      types.String `tfsdk:"identifier"`
-	Url             types.String `tfsdk:"url"`
-	ResolutionOrder types.Int64  `tfsdk:"resolution_order"`
-	Enabled         types.Bool   `tfsdk:"enabled"`
-	Internal        types.Bool   `tfsdk:"internal"`
-	Username        types.String `tfsdk:"username"`
-	LastUpdated     types.String `tfsdk:"last_updated"`
-}
-
 func (d *repositoryDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
@@ -95,6 +73,13 @@ func (d *repositoryDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 						"username": schema.StringAttribute{
 							Computed: true,
 						},
+						"password": schema.StringAttribute{
+							Computed:  true,
+							Sensitive: true,
+						},
+						"last_updated": schema.StringAttribute{
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -102,7 +87,7 @@ func (d *repositoryDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 	}
 }
 
-func (d *repositoryDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *repositoryDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state repositoryDataSourceModel
 
 	repos, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Repository], error) {
@@ -127,6 +112,7 @@ func (d *repositoryDataSource) Read(ctx context.Context, req datasource.ReadRequ
 			Enabled:         types.BoolValue(repo.Enabled),
 			Internal:        types.BoolValue(repo.Internal),
 			Username:        types.StringValue(repo.Username),
+			Password:        types.StringValue(repo.Password),
 		}
 
 		state.Repositories = append(state.Repositories, repositoryState)

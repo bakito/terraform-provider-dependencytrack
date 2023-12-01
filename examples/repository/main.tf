@@ -13,4 +13,6 @@ resource "dependencytrack_repository" "foo" {
   identifier = "foo"
   enabled    = true
   type       = "CPAN"
+  username   = "foo"
+  password   = "bar"
 }

@@ -28,6 +28,8 @@ Read-Only:
 - `id` (String)
 - `identifier` (String)
 - `internal` (Boolean)
+- `last_updated` (String)
+- `password` (String, Sensitive)
 - `resolution_order` (Number)
 - `type` (String)
 - `url` (String)
