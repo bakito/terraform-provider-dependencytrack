@@ -5,13 +5,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// teamsDataSource is the datasource implementation.
+type teamsDataSource struct {
+	client *dtrack.Client
+}
+
 // teamDataSource is the datasource implementation.
 type teamDataSource struct {
 	client *dtrack.Client
 }
 
 // teamDataSourceModel maps the data source schema data.
-type teamDataSourceModel struct {
+type teamsDataSourceModel struct {
 	Teams []teamModel `tfsdk:"teams"`
 }
 

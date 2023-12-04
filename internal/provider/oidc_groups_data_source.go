@@ -11,15 +11,15 @@ import (
 )
 
 var (
-	_ datasource.DataSource              = &oidcGroupDataSource{}
-	_ datasource.DataSourceWithConfigure = &oidcGroupDataSource{}
+	_ datasource.DataSource              = &oidcGroupsDataSource{}
+	_ datasource.DataSourceWithConfigure = &oidcGroupsDataSource{}
 )
 
-func NewOidcGroupDataSource() datasource.DataSource {
-	return &oidcGroupDataSource{}
+func NewOidcGroupsDataSource() datasource.DataSource {
+	return &oidcGroupsDataSource{}
 }
 
-func (d *oidcGroupDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *oidcGroupsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -37,12 +37,12 @@ func (d *oidcGroupDataSource) Configure(_ context.Context, req datasource.Config
 	d.client = client
 }
 
-func (d *oidcGroupDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *oidcGroupsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oidc_groups"
 }
 
 // Schema defines the schema for the data source.
-func (d *oidcGroupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *oidcGroupsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"oidc_groups": schema.ListNestedAttribute{
@@ -58,6 +58,10 @@ func (d *oidcGroupDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 						//"last_updated": schema.StringAttribute{
 						//	Computed: true,
 						//},
+						"teams": schema.SetAttribute{
+							Optional:    true,
+							ElementType: types.StringType,
+						},
 					},
 				},
 			},
@@ -65,7 +69,7 @@ func (d *oidcGroupDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 	}
 }
 
-func (d *oidcGroupDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *oidcGroupsDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state oidcGroupDataSourceModel
 
 	groups, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.OIDCGroup], error) {

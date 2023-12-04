@@ -11,15 +11,15 @@ import (
 )
 
 var (
-	_ datasource.DataSource              = &teamDataSource{}
-	_ datasource.DataSourceWithConfigure = &teamDataSource{}
+	_ datasource.DataSource              = &teamsDataSource{}
+	_ datasource.DataSourceWithConfigure = &teamsDataSource{}
 )
 
-func NewTeamDataSource() datasource.DataSource {
-	return &teamDataSource{}
+func NewTeamsDataSource() datasource.DataSource {
+	return &teamsDataSource{}
 }
 
-func (d *teamDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *teamsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -37,26 +37,33 @@ func (d *teamDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 	d.client = client
 }
 
-func (d *teamDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_team"
+func (d *teamsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_teams"
 }
 
 // Schema defines the schema for the data source.
-func (d *teamDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *teamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
+			"teams": schema.ListNestedAttribute{
 				Computed: true,
-			},
-			"name": schema.StringAttribute{
-				Required: true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed: true,
+						},
+						"name": schema.StringAttribute{
+							Computed: true,
+						},
+					},
+				},
 			},
 		},
 	}
 }
 
-func (d *teamDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state teamModel
+func (d *teamsDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var state teamsDataSourceModel
 
 	teams, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
 		return d.client.Team.GetAll(ctx, po)
@@ -70,19 +77,13 @@ func (d *teamDataSource) Read(ctx context.Context, _ datasource.ReadRequest, res
 	}
 
 	// Map response body to model
-	foundIt := false
 	for _, team := range teams {
-		if team.Name == state.Name.ValueString() {
-			foundIt = true
+		teamState := teamModel{
+			ID:   types.StringValue(team.UUID.String()),
+			Name: types.StringValue(team.Name),
 		}
-		state.ID = types.StringValue(team.UUID.String())
-	}
-	if !foundIt {
-		resp.Diagnostics.AddError(
-			"Unable to Read DependencyTrack Team",
-			fmt.Sprintf("Could not find Team with name %q", state.Name.ValueString()),
-		)
-		return
+
+		state.Teams = append(state.Teams, teamState)
 	}
 
 	// Set state

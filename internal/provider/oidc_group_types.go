@@ -5,6 +5,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// oidcGroupsDataSource is the datasource implementation.
+type oidcGroupsDataSource struct {
+	client *dtrack.Client
+}
+
 // oidcGroupDataSource is the datasource implementation.
 type oidcGroupDataSource struct {
 	client *dtrack.Client
@@ -22,7 +27,8 @@ type oidcGroupDataSourceModel struct {
 
 // oidcGroupModel maps oidc group schema data.
 type oidcGroupModel struct {
-	ID   types.String `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
+	ID    types.String `tfsdk:"id"`
+	Name  types.String `tfsdk:"name"`
+	Teams types.Set    `tfsdk:"teams"`
 	//LastUpdated types.String `tfsdk:"last_updated"`
 }

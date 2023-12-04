@@ -3,8 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
+
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -66,6 +68,10 @@ func (r *oidcGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"name": schema.StringAttribute{
 				Required: true,
 			},
+			"teams": schema.SetAttribute{
+				Optional:    true,
+				ElementType: types.StringType,
+			},
 		},
 	}
 }
@@ -98,6 +104,48 @@ func (r *oidcGroupResource) Create(ctx context.Context, req resource.CreateReque
 	plan.ID = types.StringValue(result.UUID.String())
 	//plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
+	// Get refreshed order value from DependencyTrack
+	teams, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
+		return r.client.Team.GetAll(ctx, po)
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting Teams",
+			"Could not get Teams, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	teamMap := make(map[string]dtrack.Team)
+	for i := range teams {
+		t := teams[i]
+		teamMap[t.Name] = t
+	}
+
+	for _, t := range plan.Teams.Elements() {
+		name := t.(types.String).ValueString()
+		team, ok := teamMap[name]
+		if !ok {
+			resp.Diagnostics.AddError(
+				"Error mapping Team",
+				fmt.Sprintf("Could not create OIDC Group - Team Mapping, team %q not found", name),
+			)
+			return
+		}
+
+		_, err = r.client.OIDC.AddTeamMapping(ctx, dtrack.OIDCMappingRequest{
+			Group: plan.ID.ValueString(),
+			Team:  team.UUID.String(),
+		})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating OIDC Group - Team Mapping",
+				"Could not create OIDC Group - Team Mapping, unexpected error: "+err.Error(),
+			)
+			return
+		}
+	}
+
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -122,8 +170,8 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading DependencyTrack Repositories",
-			"Could not read DependencyTrack repositories: "+err.Error(),
+			"Error Reading DependencyTrack OIDC Groups",
+			"Could not read DependencyTrack OIDC Groups: "+err.Error(),
 		)
 		return
 	}
@@ -143,6 +191,24 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	// Overwrite items with refreshed state
 	state.ID = types.StringValue(group.UUID.String())
 	state.Name = types.StringValue(group.Name)
+
+	teams, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
+		return r.client.OIDC.GetAllTeamsOf(ctx, *group, po)
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Read DependencyTrack Teams",
+			err.Error(),
+		)
+		return
+	}
+
+	var teamNames []attr.Value
+	for _, team := range teams {
+		teamNames = append(teamNames, types.StringValue(team.Name))
+	}
+	state.Teams = types.SetValueMust(types.StringType, teamNames)
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -197,7 +263,7 @@ func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 
 	// Delete existing order
-	err := r.client.Repository.Delete(ctx, state.ID.ValueString())
+	err := r.client.OIDC.DeleteGroup(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting DependencyTrack Repository",

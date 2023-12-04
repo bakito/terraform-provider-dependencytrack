@@ -22,6 +22,10 @@ description: |-
 <a id="nestedatt--oidc_groups"></a>
 ### Nested Schema for `oidc_groups`
 
+Optional:
+
+- `teams` (Set of String)
+
 Read-Only:
 
 - `id` (String)

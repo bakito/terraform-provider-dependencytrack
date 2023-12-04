@@ -168,8 +168,9 @@ func (p *dependencytrackProvider) Configure(ctx context.Context, req provider.Co
 func (p *dependencytrackProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewRepositoryDataSource,
-		NewOidcGroupDataSource,
+		NewOidcGroupsDataSource,
 		NewTeamDataSource,
+		NewTeamsDataSource,
 	}
 }
 
