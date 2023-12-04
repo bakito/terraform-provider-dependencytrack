@@ -10,11 +10,6 @@ type oidcGroupsDataSource struct {
 	client *dtrack.Client
 }
 
-// oidcGroupDataSource is the datasource implementation.
-type oidcGroupDataSource struct {
-	client *dtrack.Client
-}
-
 // oidcGroupResource is the oidc group resource implementation.
 type oidcGroupResource struct {
 	client *dtrack.Client

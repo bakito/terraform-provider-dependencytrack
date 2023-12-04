@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -122,7 +123,7 @@ func (r *oidcGroupResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	for _, t := range plan.Teams.Elements() {
-		name := t.(types.String).ValueString()
+		name := valueString(t)
 		team, ok := teamMap[name]
 		if !ok {
 			resp.Diagnostics.AddError(
@@ -151,6 +152,13 @@ func (r *oidcGroupResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
+}
+
+func valueString(t attr.Value) string {
+	if value, ok := t.(types.String); ok {
+		return value.ValueString()
+	}
+	return ""
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -278,7 +286,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 
 	for _, t := range plan.Teams.Elements() {
 
-		name := t.(types.String).ValueString()
+		name := valueString(t)
 		_, ok := groupTeams[name]
 		if !ok {
 			team, ok := allTeams[name]

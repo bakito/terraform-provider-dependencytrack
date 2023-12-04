@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -88,7 +89,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	for _, p := range plan.Permissions.Elements() {
-		team.Permissions = append(team.Permissions, dtrack.Permission{Name: p.(types.String).ValueString()})
+		team.Permissions = append(team.Permissions, dtrack.Permission{Name: valueString(p)})
 	}
 
 	// Create new team
@@ -205,7 +206,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	for _, p := range plan.Permissions.Elements() {
-		team.Permissions = append(team.Permissions, dtrack.Permission{Name: p.(types.String).ValueString()})
+		team.Permissions = append(team.Permissions, dtrack.Permission{Name: valueString(p)})
 	}
 
 	// Update existing repository
@@ -240,7 +241,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	})
 
 	for _, p := range plan.Permissions.Elements() {
-		name := p.(types.String).ValueString()
+		name := valueString(p)
 		if _, ok := teamPermissions[name]; !ok {
 			perm, ok := permissions[name]
 			if !ok {
