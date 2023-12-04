@@ -15,6 +15,11 @@ type teamDataSource struct {
 	client *dtrack.Client
 }
 
+// teamResource is the resource implementation.
+type teamResource struct {
+	client *dtrack.Client
+}
+
 // teamDataSourceModel maps the data source schema data.
 type teamsDataSourceModel struct {
 	Teams []teamModel `tfsdk:"teams"`

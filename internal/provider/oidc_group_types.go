@@ -15,7 +15,7 @@ type oidcGroupDataSource struct {
 	client *dtrack.Client
 }
 
-// oidcGroupResource is the oidc group implementation.
+// oidcGroupResource is the oidc group resource implementation.
 type oidcGroupResource struct {
 	client *dtrack.Client
 }

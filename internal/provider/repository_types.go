@@ -10,7 +10,7 @@ type repositoryDataSource struct {
 	client *dtrack.Client
 }
 
-// repositoryResource is the repository implementation.
+// repositoryResource is the resource implementation.
 type repositoryResource struct {
 	client *dtrack.Client
 }

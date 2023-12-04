@@ -179,5 +179,6 @@ func (p *dependencytrackProvider) Resources(_ context.Context) []func() resource
 	return []func() resource.Resource{
 		NewRepositoryResource,
 		NewOidcGroupResource,
+		NewTeamResource,
 	}
 }
