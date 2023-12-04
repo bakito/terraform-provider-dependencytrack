@@ -17,10 +17,10 @@ description: |-
 
 ### Read-Only
 
-- `repositories` (Attributes List) (see [below for nested schema](#nestedatt--repositories))
+- `oidc_groups` (Attributes List) (see [below for nested schema](#nestedatt--oidc_groups))
 
-<a id="nestedatt--repositories"></a>
-### Nested Schema for `repositories`
+<a id="nestedatt--oidc_groups"></a>
+### Nested Schema for `oidc_groups`
 
 Read-Only:
 

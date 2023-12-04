@@ -3,8 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"time"
-
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -62,9 +60,9 @@ func (r *oidcGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"last_updated": schema.StringAttribute{
-				Computed: true,
-			},
+			//"last_updated": schema.StringAttribute{
+			//	Computed: true,
+			//},
 			"name": schema.StringAttribute{
 				Required: true,
 			},
@@ -98,7 +96,7 @@ func (r *oidcGroupResource) Create(ctx context.Context, req resource.CreateReque
 
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(result.UUID.String())
-	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	//plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -179,7 +177,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	//plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)

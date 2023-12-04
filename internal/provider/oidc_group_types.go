@@ -17,12 +17,12 @@ type oidcGroupResource struct {
 
 // oidcGroupDataSourceModel maps the data source schema data.
 type oidcGroupDataSourceModel struct {
-	Repositories []oidcGroupModel `tfsdk:"repositories"`
+	OidcGroups []oidcGroupModel `tfsdk:"oidc_groups"`
 }
 
 // oidcGroupModel maps oidc group schema data.
 type oidcGroupModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	LastUpdated types.String `tfsdk:"last_updated"`
+	ID   types.String `tfsdk:"id"`
+	Name types.String `tfsdk:"name"`
+	//LastUpdated types.String `tfsdk:"last_updated"`
 }
