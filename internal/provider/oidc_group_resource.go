@@ -277,6 +277,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	for _, t := range plan.Teams.Elements() {
+
 		name := t.(types.String).ValueString()
 		_, ok := groupTeams[name]
 		if !ok {
@@ -326,14 +327,13 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 				}
 			}
 		}
+	}
 
-		//plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-
-		diags = resp.State.Set(ctx, plan)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	//plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	diags = resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 
