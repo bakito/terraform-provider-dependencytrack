@@ -9,7 +9,11 @@ terraform {
 provider "dependencytrack" {}
 
 data "dependencytrack_repositories" "repos" {}
+data "dependencytrack_oidc_groups" "groups" {}
 
 output "repos" {
   value = data.dependencytrack_repositories.repos
+}
+output "groups" {
+  value = data.dependencytrack_oidc_groups.groups
 }
