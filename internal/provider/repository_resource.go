@@ -265,7 +265,7 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Delete existing order
-	err := r.client.Repository.Delete(ctx, state.ID.ValueString())
+	err := r.client.Repository.Delete(ctx, uuid.MustParse(state.ID.ValueString()))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting DependencyTrack Repository",
