@@ -27,6 +27,7 @@ type teamsDataSourceModel struct {
 
 // teamModel maps oidc group schema data.
 type teamModel struct {
-	ID   types.String `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Permissions types.Set    `tfsdk:"permissions"`
 }

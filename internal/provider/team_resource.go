@@ -5,6 +5,7 @@ import (
 	"fmt"
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -63,6 +64,10 @@ func (r *teamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"name": schema.StringAttribute{
 				Required: true,
 			},
+			"permissions": schema.SetAttribute{
+				Optional:    true,
+				ElementType: types.StringType,
+			},
 		},
 	}
 }
@@ -78,7 +83,12 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	team := dtrack.Team{
-		Name: plan.Name.ValueString(),
+		Name:        plan.Name.ValueString(),
+		Permissions: []dtrack.Permission{},
+	}
+
+	for _, p := range plan.Permissions.Elements() {
+		team.Permissions = append(team.Permissions, dtrack.Permission{Name: p.(types.String).ValueString()})
 	}
 
 	// Create new team
@@ -89,6 +99,43 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 			"Could not create team, unexpected error: "+err.Error(),
 		)
 		return
+	}
+
+	permissions, err := fetchAllMappedByUI(
+		func(po dtrack.PageOptions) (dtrack.Page[dtrack.Permission], error) {
+			return r.client.Permission.GetAll(ctx, po)
+		},
+		func(it dtrack.Permission) string {
+			return it.Name
+		},
+	)
+
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting Permission",
+			fmt.Sprintf("Could not get Permissions, unexpected error: %v", err),
+		)
+		return
+	}
+
+	for _, perm := range team.Permissions {
+		p, ok := permissions[perm.Name]
+		if !ok {
+			resp.Diagnostics.AddError(
+				"Error add permission to team",
+				fmt.Sprintf("Could not add Permission to team, permission %q not found", perm.Name),
+			)
+			return
+		}
+
+		_, err := r.client.Permission.AddPermissionToTeam(ctx, p, team.UUID)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error adding Permission to Team",
+				"Could not add Permission to Team, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Map response body to schema and populate Computed attribute values
@@ -126,6 +173,12 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	state.ID = types.StringValue(team.UUID.String())
 	state.Name = types.StringValue(team.Name)
 
+	var permissionNames []attr.Value
+	for _, p := range team.Permissions {
+		permissionNames = append(permissionNames, types.StringValue(p.Name))
+	}
+	state.Permissions = types.SetValueMust(types.StringType, permissionNames)
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -146,18 +199,87 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	team := dtrack.Team{
-		UUID: uuid.MustParse(plan.ID.ValueString()),
-		Name: plan.Name.ValueString(),
+		UUID:        uuid.MustParse(plan.ID.ValueString()),
+		Name:        plan.Name.ValueString(),
+		Permissions: []dtrack.Permission{},
+	}
+
+	for _, p := range plan.Permissions.Elements() {
+		team.Permissions = append(team.Permissions, dtrack.Permission{Name: p.(types.String).ValueString()})
 	}
 
 	// Update existing repository
-	_, err := r.client.Team.Update(ctx, team)
+	updatedTeam, err := r.client.Team.Update(ctx, team)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating team",
 			"Could not update team, unexpected error: "+err.Error(),
 		)
 		return
+	}
+
+	permissions, err := fetchAllMappedByUI(
+		func(po dtrack.PageOptions) (dtrack.Page[dtrack.Permission], error) {
+			return r.client.Permission.GetAll(ctx, po)
+		},
+		func(it dtrack.Permission) string {
+			return it.Name
+		},
+	)
+
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting Permission",
+			fmt.Sprintf("Could not get Permissions, unexpected error: %v", err),
+		)
+		return
+	}
+
+	teamPermissions := mapByID(updatedTeam.Permissions, func(it dtrack.Permission) string {
+		return it.Name
+	})
+
+	for _, p := range plan.Permissions.Elements() {
+		name := p.(types.String).ValueString()
+		if _, ok := teamPermissions[name]; !ok {
+			perm, ok := permissions[name]
+			if !ok {
+				resp.Diagnostics.AddError(
+					"Error add permission to team",
+					fmt.Sprintf("Could not add Permission to team, permission %q not found", name),
+				)
+				return
+			}
+			_, err := r.client.Permission.AddPermissionToTeam(ctx, perm, team.UUID)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Error adding Permission to Team",
+					"Could not add Permission to Team, unexpected error: "+err.Error(),
+				)
+				return
+			}
+		} else {
+			delete(teamPermissions, name)
+		}
+	}
+
+	for _, perm := range teamPermissions {
+		p, ok := permissions[perm.Name]
+		if !ok {
+			resp.Diagnostics.AddError(
+				"Error add permission to team",
+				fmt.Sprintf("Could not remove Permission from team, permission %q not found", perm.Name),
+			)
+			return
+		}
+		_, err := r.client.Permission.RemovePermissionFromTeam(ctx, p, team.UUID)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error removing Permission from Team",
+				"Could not remove Permission from Team, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	diags = resp.State.Set(ctx, plan)
