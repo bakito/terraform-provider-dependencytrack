@@ -1,4 +1,7 @@
 # Visit https://goreleaser.com for documentation on how to customize this
+
+project_name: terraform-provider-dependencytrack
+
 # behavior.
 before:
   hooks:
