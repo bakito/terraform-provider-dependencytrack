@@ -5,11 +5,24 @@ import (
 	"fmt"
 	"strings"
 
+	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 // repositoryTypes see https://github.com/DependencyTrack/dependency-track/blob/master/src/main/java/org/dependencytrack/model/RepositoryType.java
-var repositoryTypes = []string{"CPAN", "MAVEN", "NPM", "GEM", "PYPI", "NUGET", "HEX", "COMPOSER", "CARGO", "GO_MODULES", "GITHUB"}
+var repositoryTypes = []string{
+	dtrack.RepositoryTypeCargo,
+	dtrack.RepositoryTypeComposer,
+	dtrack.RepositoryTypeCpan,
+	dtrack.RepositoryTypeGem,
+	dtrack.RepositoryTypeGithub,
+	dtrack.RepositoryTypeGoModules,
+	dtrack.RepositoryTypeHex,
+	dtrack.RepositoryTypeMaven,
+	dtrack.RepositoryTypeNpm,
+	dtrack.RepositoryTypeNuget,
+	dtrack.RepositoryTypePypi,
+}
 
 type repositoryTypeValidator struct {
 }
