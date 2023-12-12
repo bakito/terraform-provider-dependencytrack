@@ -8,7 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-var repositoryTypes = []string{"CPAN", "MAVEN", "NPM", "GEM", "PYPI", "NUGET", "HEX", "COMPOSER", "CARGO", "GO_MODULES", "UNSUPPORTED"}
+// repositoryTypes see https://github.com/DependencyTrack/dependency-track/blob/master/src/main/java/org/dependencytrack/model/RepositoryType.java
+var repositoryTypes = []string{"CPAN", "MAVEN", "NPM", "GEM", "PYPI", "NUGET", "HEX", "COMPOSER", "CARGO", "GO_MODULES", "GITHUB"}
 
 type repositoryTypeValidator struct {
 }
