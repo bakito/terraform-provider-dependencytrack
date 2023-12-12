@@ -93,6 +93,12 @@ func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"authentication_required": schema.BoolAttribute{
+				Optional: true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"username": schema.StringAttribute{
 				Optional: true,
 				PlanModifiers: []planmodifier.String{
@@ -121,13 +127,14 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	repository := dtrack.Repository{
-		Type:       dtrack.RepositoryType(plan.Type.ValueString()),
-		Identifier: plan.Identifier.ValueString(),
-		Url:        plan.Url.ValueString(),
-		Enabled:    plan.Enabled.ValueBool(),
-		Internal:   plan.Internal.ValueBool(),
-		Username:   plan.Username.ValueString(),
-		Password:   plan.Password.ValueString(),
+		Type:                   dtrack.RepositoryType(plan.Type.ValueString()),
+		Identifier:             plan.Identifier.ValueString(),
+		Url:                    plan.Url.ValueString(),
+		Enabled:                plan.Enabled.ValueBool(),
+		Internal:               plan.Internal.ValueBool(),
+		AuthenticationRequired: plan.AuthenticationRequired.ValueBool(),
+		Username:               plan.Username.ValueString(),
+		Password:               plan.Password.ValueString(),
 	}
 
 	// Create new repository
@@ -197,6 +204,9 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	if repo.Internal {
 		state.Internal = types.BoolValue(repo.Internal)
 	}
+	if repo.AuthenticationRequired {
+		state.AuthenticationRequired = types.BoolValue(repo.AuthenticationRequired)
+	}
 	if repo.Username != "" {
 		state.Username = types.StringValue(repo.Username)
 	}
@@ -223,14 +233,15 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	repository := dtrack.Repository{
-		UUID:       uuid.MustParse(plan.ID.ValueString()),
-		Type:       dtrack.RepositoryType(plan.Type.ValueString()),
-		Identifier: plan.Identifier.ValueString(),
-		Url:        plan.Url.ValueString(),
-		Enabled:    plan.Enabled.ValueBool(),
-		Internal:   plan.Internal.ValueBool(),
-		Username:   plan.Username.ValueString(),
-		Password:   plan.Password.ValueString(),
+		UUID:                   uuid.MustParse(plan.ID.ValueString()),
+		Type:                   dtrack.RepositoryType(plan.Type.ValueString()),
+		Identifier:             plan.Identifier.ValueString(),
+		Url:                    plan.Url.ValueString(),
+		Enabled:                plan.Enabled.ValueBool(),
+		Internal:               plan.Internal.ValueBool(),
+		AuthenticationRequired: plan.AuthenticationRequired.ValueBool(),
+		Username:               plan.Username.ValueString(),
+		Password:               plan.Password.ValueString(),
 	}
 
 	// Update existing repository

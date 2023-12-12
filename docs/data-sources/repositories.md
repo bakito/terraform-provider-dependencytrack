@@ -24,6 +24,7 @@ description: |-
 
 Read-Only:
 
+- `authentication_required` (Boolean)
 - `enabled` (Boolean)
 - `id` (String)
 - `identifier` (String)

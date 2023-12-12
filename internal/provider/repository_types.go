@@ -22,14 +22,15 @@ type repositoryDataSourceModel struct {
 
 // repositoryModel maps repository schema data.
 type repositoryModel struct {
-	ID              types.String `tfsdk:"id"`
-	Type            types.String `tfsdk:"type"`
-	Identifier      types.String `tfsdk:"identifier"`
-	Url             types.String `tfsdk:"url"`
-	ResolutionOrder types.Int64  `tfsdk:"resolution_order"`
-	Enabled         types.Bool   `tfsdk:"enabled"`
-	Internal        types.Bool   `tfsdk:"internal"`
-	Username        types.String `tfsdk:"username"`
-	Password        types.String `tfsdk:"password"`
-	LastUpdated     types.String `tfsdk:"last_updated"`
+	ID                     types.String `tfsdk:"id"`
+	Type                   types.String `tfsdk:"type"`
+	Identifier             types.String `tfsdk:"identifier"`
+	Url                    types.String `tfsdk:"url"`
+	ResolutionOrder        types.Int64  `tfsdk:"resolution_order"`
+	Enabled                types.Bool   `tfsdk:"enabled"`
+	Internal               types.Bool   `tfsdk:"internal"`
+	AuthenticationRequired types.Bool   `tfsdk:"authentication_required"`
+	Username               types.String `tfsdk:"username"`
+	Password               types.String `tfsdk:"password"`
+	LastUpdated            types.String `tfsdk:"last_updated"`
 }

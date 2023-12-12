@@ -24,6 +24,7 @@ description: |-
 
 ### Optional
 
+- `authentication_required` (Boolean)
 - `internal` (Boolean)
 - `password` (String, Sensitive)
 - `username` (String)

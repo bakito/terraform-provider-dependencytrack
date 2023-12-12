@@ -74,4 +74,4 @@ require (
 	google.golang.org/protobuf v1.31.0 // indirect
 )
 
-//replace github.com/DependencyTrack/client-go v0.12.0 => github.com/bakito/client-go v0.0.0-20231204181714-303c704f7a54
+replace github.com/DependencyTrack/client-go v0.13.0 => github.com/bakito/client-go v0.0.0-20231212122520-2f12529f0d73

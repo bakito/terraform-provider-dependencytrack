@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -70,6 +69,9 @@ func (d *repositoryDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 						"internal": schema.BoolAttribute{
 							Computed: true,
 						},
+						"authentication_required": schema.BoolAttribute{
+							Computed: true,
+						},
 						"username": schema.StringAttribute{
 							Computed: true,
 						},
@@ -104,15 +106,16 @@ func (d *repositoryDataSource) Read(ctx context.Context, _ datasource.ReadReques
 	// Map response body to model
 	for _, repo := range repos {
 		repositoryState := repositoryModel{
-			ID:              types.StringValue(repo.UUID.String()),
-			Type:            types.StringValue(string(repo.Type)),
-			Identifier:      types.StringValue(repo.Identifier),
-			Url:             types.StringValue(repo.Url),
-			ResolutionOrder: types.Int64Value(int64(repo.ResolutionOrder)),
-			Enabled:         types.BoolValue(repo.Enabled),
-			Internal:        types.BoolValue(repo.Internal),
-			Username:        types.StringValue(repo.Username),
-			Password:        types.StringValue(repo.Password),
+			ID:                     types.StringValue(repo.UUID.String()),
+			Type:                   types.StringValue(string(repo.Type)),
+			Identifier:             types.StringValue(repo.Identifier),
+			Url:                    types.StringValue(repo.Url),
+			ResolutionOrder:        types.Int64Value(int64(repo.ResolutionOrder)),
+			Enabled:                types.BoolValue(repo.Enabled),
+			Internal:               types.BoolValue(repo.Internal),
+			AuthenticationRequired: types.BoolValue(repo.AuthenticationRequired),
+			Username:               types.StringValue(repo.Username),
+			Password:               types.StringValue(repo.Password),
 		}
 
 		state.Repositories = append(state.Repositories, repositoryState)
