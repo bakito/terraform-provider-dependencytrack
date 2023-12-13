@@ -204,9 +204,7 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	if repo.Internal {
 		state.Internal = types.BoolValue(repo.Internal)
 	}
-	if repo.AuthenticationRequired {
-		state.AuthenticationRequired = types.BoolValue(repo.AuthenticationRequired)
-	}
+	state.AuthenticationRequired = types.BoolValue(repo.AuthenticationRequired)
 	if repo.Username != "" {
 		state.Username = types.StringValue(repo.Username)
 	}
