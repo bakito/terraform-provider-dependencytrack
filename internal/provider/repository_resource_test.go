@@ -16,12 +16,13 @@ func TestAccOrderResource(t *testing.T) {
 			{
 				Config: cfg + `
 resource "dependencytrack_repository" "test" {
-  url        = "https://foo.bar"
-  identifier = "foo"
-  enabled    = true
-  type       = "GO_MODULES"
-  username   = "foo"
-  password   = "bar"
+  url                     = "https://foo.bar"
+  identifier              = "foo"
+  enabled                 = true
+  type                    = "GO_MODULES"
+  username                = "foo"
+  password                = "bar"
+  authentication_required = false
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -31,6 +32,7 @@ resource "dependencytrack_repository" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_repository.test", "url", "https://foo.bar"),
 					resource.TestCheckResourceAttr("dependencytrack_repository.test", "resolution_order", "1"),
 					resource.TestCheckResourceAttr("dependencytrack_repository.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_repository.test", "authentication_required", "false"),
 				),
 			},
 			// ImportState testing
@@ -46,12 +48,13 @@ resource "dependencytrack_repository" "test" {
 			{
 				Config: cfg + `
 resource "dependencytrack_repository" "test" {
-  url        = "https://foo.org"
-  identifier = "foo"
-  enabled    = true
-  type       = "GO_MODULES"
-  username   = "foo"
-  password   = "bar"
+  url                     = "https://foo.org"
+  identifier              = "foo"
+  enabled                 = true
+  type                    = "GO_MODULES"
+  username                = "foo"
+  password                = "bar"
+  authentication_required = false
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -61,6 +64,7 @@ resource "dependencytrack_repository" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_repository.test", "url", "https://foo.org"),
 					resource.TestCheckResourceAttr("dependencytrack_repository.test", "resolution_order", "1"),
 					resource.TestCheckResourceAttr("dependencytrack_repository.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_repository.test", "authentication_required", "false"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

@@ -26,6 +26,7 @@ func TestAccCoffeesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.dependencytrack_repositories.test", "repositories.0.resolution_order", "1"),
 					resource.TestCheckResourceAttr("data.dependencytrack_repositories.test", "repositories.0.enabled", "true"),
 					resource.TestCheckResourceAttr("data.dependencytrack_repositories.test", "repositories.0.internal", "false"),
+					resource.TestCheckResourceAttr("data.dependencytrack_repositories.test", "repositories.0.authentication_required", "false"),
 				),
 			},
 		},
