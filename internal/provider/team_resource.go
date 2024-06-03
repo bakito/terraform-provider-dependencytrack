@@ -83,6 +83,29 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	// Get refreshed order value from DependencyTrack
+	allTeams, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
+		return r.client.Team.GetAll(ctx, po)
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting all Teams",
+			"Could not get Teams, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	for _, existing := range allTeams {
+		if existing.Name == plan.Name.ValueString() {
+			resp.Diagnostics.AddError(
+				"Error creating team",
+				fmt.Sprintf("A team with name %q exists already with UUID %q",
+					plan.Name.ValueString(), existing.UUID.String()),
+			)
+			return
+		}
+	}
+
 	team := dtrack.Team{
 		Name:        plan.Name.ValueString(),
 		Permissions: []dtrack.Permission{},

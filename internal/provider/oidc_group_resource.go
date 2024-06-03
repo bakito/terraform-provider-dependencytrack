@@ -86,6 +86,29 @@ func (r *oidcGroupResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
+	// Get refreshed order value from DependencyTrack
+	allGroups, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.OIDCGroup], error) {
+		return r.client.OIDC.GetAllGroups(ctx, po)
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting all OIDC Groups",
+			"Could not get OIDC Groups, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	for _, existing := range allGroups {
+		if existing.Name == plan.Name.ValueString() {
+			resp.Diagnostics.AddError(
+				"Error creating team",
+				fmt.Sprintf("A IDC Groups with name %q exists already with UUID %q",
+					plan.Name.ValueString(), existing.UUID.String()),
+			)
+			return
+		}
+	}
+
 	oidcGroup := dtrack.OIDCGroup{
 		Name: plan.Name.ValueString(),
 	}
