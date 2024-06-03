@@ -129,7 +129,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 			return
 		}
 
-		_, err := r.client.Permission.AddPermissionToTeam(ctx, p, team.UUID)
+		_, err := r.client.Permission.AddPermissionToTeam(ctx, p, result.UUID)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error adding Permission to Team",
