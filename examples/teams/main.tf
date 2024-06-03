@@ -14,3 +14,6 @@ data "dependencytrack_teams" "teams" {
 output "teams" {
   value = data.dependencytrack_teams.teams
 }
+
+data "dependencytrack_config_properties" "properties" {
+}

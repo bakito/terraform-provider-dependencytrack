@@ -8,11 +8,9 @@ terraform {
 
 provider "dependencytrack" {}
 
-data "dependencytrack_repositories" "repo" {
+data "dependencytrack_oidc_groups" "oidc_groups" {
 }
 
-output "repo" {
-  value     = data.dependencytrack_repositories.repo
-  sensitive = true
-
+output "oidc_groups" {
+  value = data.dependencytrack_oidc_groups.oidc_groups
 }
