@@ -95,7 +95,7 @@ func (d *configPropertiesDataSource) Read(ctx context.Context, _ datasource.Read
 			Value: types.StringValue(property.PropertyValue),
 		}
 
-		state.configProperties = append(state.configProperties, configPropertyState)
+		state.ConfigProperties = append(state.ConfigProperties, configPropertyState)
 	}
 
 	// Set state

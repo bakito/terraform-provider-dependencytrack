@@ -12,6 +12,7 @@ install:
 	go install .
 
 generate: install
+	rm -Rf docs
 	go generate ./...
 
 release: goreleaser semver

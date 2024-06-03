@@ -17,10 +17,10 @@ description: |-
 
 ### Read-Only
 
-- `properties` (Attributes List) (see [below for nested schema](#nestedatt--properties))
+- `config_properties` (Attributes List) (see [below for nested schema](#nestedatt--config_properties))
 
-<a id="nestedatt--properties"></a>
-### Nested Schema for `properties`
+<a id="nestedatt--config_properties"></a>
+### Nested Schema for `config_properties`
 
 Read-Only:
 

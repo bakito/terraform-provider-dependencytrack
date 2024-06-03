@@ -20,7 +20,7 @@ type configPropertyResource struct {
 
 // configPropertiesDataSourceModel maps the data source schema data.
 type configPropertiesDataSourceModel struct {
-	configProperties []configPropertyModel `tfsdk:"config_properties"`
+	ConfigProperties []configPropertyModel `tfsdk:"config_properties"`
 }
 
 // configPropertyModel maps configuration property schema data.
