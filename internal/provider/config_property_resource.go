@@ -112,6 +112,7 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 			stateProperty = &property
 		}
 	}
+
 	if stateProperty == nil {
 		resp.State.RemoveResource(ctx)
 		return

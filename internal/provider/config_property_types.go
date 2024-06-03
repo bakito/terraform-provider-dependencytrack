@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,5 +33,5 @@ type configPropertyModel struct {
 }
 
 func configPropertyID(cp dtrack.ConfigProperty) string {
-	return fmt.Sprintf("%s-%s", cp.GroupName, cp.PropertyName)
+	return fmt.Sprintf("%s_%s", cp.GroupName, strings.ReplaceAll(cp.PropertyName, ".", "-"))
 }
