@@ -24,8 +24,7 @@ var repositoryTypes = []string{
 	dtrack.RepositoryTypePypi,
 }
 
-type repositoryTypeValidator struct {
-}
+type repositoryTypeValidator struct{}
 
 func (r repositoryTypeValidator) Description(_ context.Context) string {
 	return fmt.Sprintf("Available Type Values: %s", strings.Join(repositoryTypes, ", "))

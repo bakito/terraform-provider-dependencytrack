@@ -83,4 +83,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/DependencyTrack/client-go v0.13.0 => github.com/bakito/client-go v0.0.0-20231212122520-2f12529f0d73
+replace github.com/DependencyTrack/client-go v0.13.0 => github.com/bakito/client-go v0.0.0-20240603162904-6efd85bc4eff

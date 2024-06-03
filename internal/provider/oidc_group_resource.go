@@ -125,7 +125,7 @@ func (r *oidcGroupResource) Create(ctx context.Context, req resource.CreateReque
 
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(result.UUID.String())
-	//plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	// plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	// Get refreshed order value from DependencyTrack
 	teams, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
@@ -249,7 +249,6 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 // Update updates the oidcGroup and sets the updated Terraform state on success.
 func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-
 	// Retrieve values from plan
 	var plan oidcGroupModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -296,7 +295,6 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		},
 		func(it dtrack.Team) string {
 			return it.Name
-
 		},
 	)
 	if err != nil {
@@ -360,7 +358,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		}
 	}
 
-	//plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	// plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

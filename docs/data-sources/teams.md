@@ -22,6 +22,10 @@ description: |-
 <a id="nestedatt--teams"></a>
 ### Nested Schema for `teams`
 
+Optional:
+
+- `permissions` (Set of String)
+
 Read-Only:
 
 - `id` (String)

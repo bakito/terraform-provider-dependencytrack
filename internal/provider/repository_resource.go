@@ -245,7 +245,6 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 
 // Update updates the repository and sets the updated Terraform state on success.
 func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-
 	// Retrieve values from plan
 	var plan repositoryModel
 	diags := req.Plan.Get(ctx, &plan)

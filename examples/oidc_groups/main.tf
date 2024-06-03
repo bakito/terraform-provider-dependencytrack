@@ -8,9 +8,9 @@ terraform {
 
 provider "dependencytrack" {}
 
-data "dependencytrack_teams" "teams" {
+data "dependencytrack_oidc_groups" "oidc_groups" {
 }
 
-output "teams" {
-  value = data.dependencytrack_teams.teams
+output "oidc_groups" {
+  value = data.dependencytrack_oidc_groups.oidc_groups
 }

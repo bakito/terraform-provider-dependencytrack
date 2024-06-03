@@ -8,11 +8,12 @@ terraform {
 
 provider "dependencytrack" {}
 
-data "dependencytrack_repositories" "repo" {
+data "dependencytrack_teams" "teams" {
 }
 
-output "repo" {
-  value     = data.dependencytrack_repositories.repo
-  sensitive = true
+output "teams" {
+  value = data.dependencytrack_teams.teams
+}
 
+data "dependencytrack_config_properties" "properties" {
 }

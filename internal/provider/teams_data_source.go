@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	dtrack "github.com/DependencyTrack/client-go"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -55,6 +56,10 @@ func (d *teamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 						"name": schema.StringAttribute{
 							Computed: true,
 						},
+						"permissions": schema.SetAttribute{
+							Optional:    true,
+							ElementType: types.StringType,
+						},
 					},
 				},
 			},
@@ -82,6 +87,12 @@ func (d *teamsDataSource) Read(ctx context.Context, _ datasource.ReadRequest, re
 			ID:   types.StringValue(team.UUID.String()),
 			Name: types.StringValue(team.Name),
 		}
+
+		var permissionNames []attr.Value
+		for _, p := range team.Permissions {
+			permissionNames = append(permissionNames, types.StringValue(p.Name))
+		}
+		teamState.Permissions = types.SetValueMust(types.StringType, permissionNames)
 
 		state.Teams = append(state.Teams, teamState)
 	}

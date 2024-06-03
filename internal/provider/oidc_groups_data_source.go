@@ -55,9 +55,6 @@ func (d *oidcGroupsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 						"name": schema.StringAttribute{
 							Computed: true,
 						},
-						//"last_updated": schema.StringAttribute{
-						//	Computed: true,
-						//},
 						"teams": schema.SetAttribute{
 							Optional:    true,
 							ElementType: types.StringType,

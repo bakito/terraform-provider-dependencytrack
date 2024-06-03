@@ -7,21 +7,31 @@ issues:
 linters:
   disable-all: true
   enable:
+    - asciicheck
+    - bodyclose
+    - dogsled
     - durationcheck
     - errcheck
-    - exportloopref
-    - forcetypeassert
-    - godot
+    - errorlint
+    - gci
     - gofmt
+    - gofumpt
+    - goimports
+    - gosec
     - gosimple
+    - govet
+    - importas
     - ineffassign
-    - makezero
     - misspell
-    - nilerr
-    - predeclared
+    - nakedret
+    - nolintlint
     - staticcheck
-    - tenv
     - unconvert
     - unparam
     - unused
-    - govet
+linters-settings:
+  gosec:
+    # Exclude generated files
+    exclude-generated: true
+    excludes:
+      - G601 # not applicable in go 1.22 anymore
