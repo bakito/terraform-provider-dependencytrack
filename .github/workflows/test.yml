@@ -32,7 +32,7 @@ jobs:
       - name: Run linters
         uses: golangci/golangci-lint-action@v6
         with:
-          skip-pkg-cache: true
+          skip-cache: true
           version: latest
 
   generate:
@@ -42,7 +42,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
-          cache: true
       - run: go generate ./...
       - name: git diff
         run: |

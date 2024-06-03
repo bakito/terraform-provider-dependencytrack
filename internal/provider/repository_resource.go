@@ -126,6 +126,30 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	// Get refreshed order value from DependencyTrack
+	allRepos, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Repository], error) {
+		return r.client.Repository.GetAll(ctx, po)
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting all Repositories",
+			"Could not get Repositories, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	for _, existing := range allRepos {
+		if existing.Identifier == plan.Identifier.ValueString() &&
+			existing.Type == dtrack.RepositoryType(plan.Type.ValueString()) {
+			resp.Diagnostics.AddError(
+				"Error creating team",
+				fmt.Sprintf("A repository with identifier %q exists already with UUID %q",
+					plan.Identifier.ValueString(), existing.UUID.String()),
+			)
+			return
+		}
+	}
+
 	repository := dtrack.Repository{
 		Type:                   dtrack.RepositoryType(plan.Type.ValueString()),
 		Identifier:             plan.Identifier.ValueString(),
