@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// configPropertyDataSource is the datasource implementation.
-type configPropertyDataSource struct {
+// configPropertiesDataSource is the datasource implementation.
+type configPropertiesDataSource struct {
 	client *dtrack.Client
 }
 
@@ -18,9 +18,9 @@ type configPropertyResource struct {
 	client *dtrack.Client
 }
 
-// configPropertyDataSourceModel maps the data source schema data.
-type configPropertyDataSourceModel struct {
-	configProperty []configPropertyModel `tfsdk:"config_property"`
+// configPropertiesDataSourceModel maps the data source schema data.
+type configPropertiesDataSourceModel struct {
+	configProperties []configPropertyModel `tfsdk:"config_properties"`
 }
 
 // configPropertyModel maps configuration property schema data.

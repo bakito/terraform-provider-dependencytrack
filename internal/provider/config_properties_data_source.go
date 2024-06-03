@@ -11,15 +11,15 @@ import (
 )
 
 var (
-	_ datasource.DataSource              = &configPropertyDataSource{}
-	_ datasource.DataSourceWithConfigure = &configPropertyDataSource{}
+	_ datasource.DataSource              = &configPropertiesDataSource{}
+	_ datasource.DataSourceWithConfigure = &configPropertiesDataSource{}
 )
 
-func NewConfigPropertyDataSource() datasource.DataSource {
-	return &configPropertyDataSource{}
+func NewConfigPropertiesDataSource() datasource.DataSource {
+	return &configPropertiesDataSource{}
 }
 
-func (d *configPropertyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *configPropertiesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -37,15 +37,15 @@ func (d *configPropertyDataSource) Configure(_ context.Context, req datasource.C
 	d.client = client
 }
 
-func (d *configPropertyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_config_property"
+func (d *configPropertiesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_config_properties"
 }
 
 // Schema defines the schema for the data source.
-func (d *configPropertyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *configPropertiesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"config_property": schema.ListNestedAttribute{
+			"config_properties": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -71,15 +71,15 @@ func (d *configPropertyDataSource) Schema(_ context.Context, _ datasource.Schema
 	}
 }
 
-func (d *configPropertyDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state configPropertyDataSourceModel
+func (d *configPropertiesDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var state configPropertiesDataSourceModel
 
 	properties, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.ConfigProperty], error) {
 		return d.client.ConfigProperty.GetAllConfigProperties(ctx, po)
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Read DependencyTrack OIDC Groups",
+			"Unable to Read DependencyTrack Config Properties Groups",
 			err.Error(),
 		)
 		return
@@ -95,7 +95,7 @@ func (d *configPropertyDataSource) Read(ctx context.Context, _ datasource.ReadRe
 			Value: types.StringValue(property.PropertyValue),
 		}
 
-		state.configProperty = append(state.configProperty, configPropertyState)
+		state.configProperties = append(state.configProperties, configPropertyState)
 	}
 
 	// Set state
