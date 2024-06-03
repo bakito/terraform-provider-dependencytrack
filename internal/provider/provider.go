@@ -171,6 +171,7 @@ func (p *dependencytrackProvider) DataSources(_ context.Context) []func() dataso
 		NewOidcGroupsDataSource,
 		NewTeamDataSource,
 		NewTeamsDataSource,
+		NewConfigPropertyDataSource,
 	}
 }
 
@@ -180,5 +181,6 @@ func (p *dependencytrackProvider) Resources(_ context.Context) []func() resource
 		NewRepositoryResource,
 		NewOidcGroupResource,
 		NewTeamResource,
+		NewConfigPropertyResource,
 	}
 }

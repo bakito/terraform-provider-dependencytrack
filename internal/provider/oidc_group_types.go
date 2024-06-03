@@ -25,5 +25,5 @@ type oidcGroupModel struct {
 	ID    types.String `tfsdk:"id"`
 	Name  types.String `tfsdk:"name"`
 	Teams types.Set    `tfsdk:"teams"`
-	//LastUpdated types.String `tfsdk:"last_updated"`
+	// LastUpdated types.String `tfsdk:"last_updated"`
 }

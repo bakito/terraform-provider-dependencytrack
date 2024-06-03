@@ -11,7 +11,7 @@ lint: golangci-lint
 install:
 	go install .
 
-generate:
+generate: install
 	go generate ./...
 
 release: goreleaser semver

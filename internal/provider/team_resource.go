@@ -133,7 +133,6 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 			return it.Name
 		},
 	)
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error getting Permission",
@@ -213,7 +212,6 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 // Update updates the repository and sets the updated Terraform state on success.
 func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-
 	// Retrieve values from plan
 	var plan teamModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -250,7 +248,6 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 			return it.Name
 		},
 	)
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error getting Permission",

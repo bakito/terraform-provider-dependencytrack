@@ -28,15 +28,13 @@ provider "dependencytrack" {
 `
 )
 
-var (
-	// accProtoV6ProviderFactories are used to instantiate a provider during
-	// acceptance testing. The factory function will be invoked for every Terraform
-	// CLI command executed to create a provider server to which the CLI can
-	// reattach.
-	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-		"dependencytrack": providerserver.NewProtocol6WithError(provider.New("test")()),
-	}
-)
+// accProtoV6ProviderFactories are used to instantiate a provider during
+// acceptance testing. The factory function will be invoked for every Terraform
+// CLI command executed to create a provider server to which the CLI can
+// reattach.
+var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+	"dependencytrack": providerserver.NewProtocol6WithError(provider.New("test")()),
+}
 
 // server return a test server and the matching provider config.
 func testServer() (*httptest.Server, string) {
@@ -64,7 +62,6 @@ func testServer() (*httptest.Server, string) {
 }
 
 func serveResponse(repos map[string]dtrack.Repository) func(writer http.ResponseWriter, request *http.Request) {
-
 	return func(writer http.ResponseWriter, request *http.Request) {
 		if request.Method == "GET" {
 			var repoList []dtrack.Repository
