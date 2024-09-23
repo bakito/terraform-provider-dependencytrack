@@ -1,7 +1,6 @@
 module github.com/bakito/terraform-provider-dependencytrack
 
-go 1.22
-toolchain go1.22.5
+go 1.23.1
 
 require (
 	github.com/DependencyTrack/client-go v0.13.0
