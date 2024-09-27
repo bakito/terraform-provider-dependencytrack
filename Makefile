@@ -37,8 +37,11 @@ GORELEASER ?= $(LOCALBIN)/goreleaser
 SEMVER ?= $(LOCALBIN)/semver
 
 ## Tool Versions
-GOLANGCI_LINT_VERSION ?= v1.59.0
-GORELEASER_VERSION ?= v1.26.2
+# renovate: packageName=github.com/golangci/golangci-lint/cmd/golangci-lint
+GOLANGCI_LINT_VERSION ?= v1.61.0
+# renovate: packageName=github.com/goreleaser/goreleaser
+GORELEASER_VERSION ?= v2.3.2
+# renovate: packageName=github.com/bakito/semver
 SEMVER_VERSION ?= v1.1.3
 
 ## Tool Installer
