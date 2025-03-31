@@ -29,11 +29,8 @@ jobs:
           cache: true
       - run: go mod download
       - run: go build -v .
-      - name: Run linters
-        uses: golangci/golangci-lint-action@v6
-        with:
-          skip-cache: true
-          version: latest
+      - name: Lint
+        run: make lint
 
   generate:
     runs-on: ubuntu-latest

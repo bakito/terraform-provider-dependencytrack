@@ -44,7 +44,7 @@ tb.reset:
 .PHONY: tb.update
 tb.update: tb.reset
 	toolbox makefile -f $(TB_LOCALDIR)/Makefile \
-		github.com/golangci/golangci-lint/cmd/golangci-lint \
+		github.com/golangci/golangci-lint/v2/cmd/golangci-lint \
 		github.com/goreleaser/goreleaser/v2 \
 		github.com/bakito/semver
 ## toolbox - end
