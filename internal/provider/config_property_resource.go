@@ -95,9 +95,7 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get refreshed order value from DependencyTrack
-	properties, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.ConfigProperty], error) {
-		return r.client.ConfigProperty.GetAllConfigProperties(ctx, po)
-	})
+	properties, err := r.client.Config.GetAll(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading DependencyTrack Configuration Properties",
@@ -121,9 +119,9 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 	// Overwrite items with refreshed state
 	state.ID = types.StringValue(configPropertyID(*stateProperty))
 	state.Group = types.StringValue(stateProperty.GroupName)
-	state.Name = types.StringValue(stateProperty.PropertyName)
-	state.Type = types.StringValue(stateProperty.PropertyType)
-	state.Value = types.StringValue(stateProperty.PropertyValue)
+	state.Name = types.StringValue(stateProperty.Name)
+	state.Type = types.StringValue(stateProperty.Type)
+	state.Value = types.StringValue(stateProperty.Value)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -144,14 +142,14 @@ func (r *configPropertyResource) Update(ctx context.Context, req resource.Update
 	}
 
 	configProperty := dtrack.ConfigProperty{
-		GroupName:     plan.Group.ValueString(),
-		PropertyName:  plan.Name.ValueString(),
-		PropertyType:  plan.Type.ValueString(),
-		PropertyValue: plan.Value.ValueString(),
+		GroupName: plan.Group.ValueString(),
+		Name:      plan.Name.ValueString(),
+		Type:      plan.Type.ValueString(),
+		Value:     plan.Value.ValueString(),
 	}
 
 	// Update existing configProperty
-	_, err := r.client.ConfigProperty.UpdateConfigProperty(ctx, configProperty)
+	_, err := r.client.Config.Update(ctx, configProperty)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating config property",

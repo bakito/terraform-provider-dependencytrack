@@ -53,6 +53,12 @@ func testServer() (*httptest.Server, string) {
 	router := http.NewServeMux()
 	router.HandleFunc("/api/v1/repository", serveResponse(repos))
 	router.HandleFunc("/api/v1/repository/", serveResponse(repos))
+	router.HandleFunc("/api/version", func(writer http.ResponseWriter, request *http.Request) {
+		b, _ := json.Marshal(&dtrack.About{})
+		_, _ = writer.Write(b)
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+	})
 	router.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Printf("Missed path %q in test server!\n", request.RequestURI)
 	})
@@ -63,7 +69,8 @@ func testServer() (*httptest.Server, string) {
 
 func serveResponse(repos map[string]dtrack.Repository) func(writer http.ResponseWriter, request *http.Request) {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		if request.Method == "GET" {
+		switch request.Method {
+		case "GET":
 			var repoList []dtrack.Repository
 			for _, r := range repos {
 				repoList = append(repoList, r)
@@ -71,10 +78,10 @@ func serveResponse(repos map[string]dtrack.Repository) func(writer http.Response
 			b, _ := json.Marshal(&repoList)
 			writer.Header().Set("X-Total-Count", fmt.Sprintf("%d", len(repos)))
 			_, _ = writer.Write(b)
-		} else if request.Method == "DELETE" {
+		case "DELETE":
 			path := strings.Split(request.RequestURI, "/")
 			delete(repos, path[len(path)-1])
-		} else {
+		default:
 			defer func() { _ = request.Body.Close() }()
 			b, _ := io.ReadAll(request.Body)
 			repo := dtrack.Repository{}

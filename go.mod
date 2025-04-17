@@ -3,7 +3,7 @@ module github.com/bakito/terraform-provider-dependencytrack
 go 1.24.1
 
 require (
-	github.com/DependencyTrack/client-go v0.13.0
+	github.com/DependencyTrack/client-go v0.16.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-docs v0.21.0
 	github.com/hashicorp/terraform-plugin-framework v1.14.1
@@ -84,5 +84,3 @@ require (
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/DependencyTrack/client-go v0.13.0 => github.com/bakito/dependency-track-client-go v0.0.0-20240603162904-6efd85bc4eff
