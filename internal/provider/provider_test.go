@@ -53,6 +53,12 @@ func testServer() (*httptest.Server, string) {
 	router := http.NewServeMux()
 	router.HandleFunc("/api/v1/repository", serveResponse(repos))
 	router.HandleFunc("/api/v1/repository/", serveResponse(repos))
+	router.HandleFunc("/api/version", func(writer http.ResponseWriter, request *http.Request) {
+		b, _ := json.Marshal(&dtrack.About{})
+		_, _ = writer.Write(b)
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+	})
 	router.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Printf("Missed path %q in test server!\n", request.RequestURI)
 	})
