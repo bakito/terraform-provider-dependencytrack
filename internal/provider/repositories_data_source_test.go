@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccCoffeesDataSource(t *testing.T) {
+func TestRepositoriesDataSource(t *testing.T) {
 	server, cfg := testServer()
 	defer server.Close()
 	resource.Test(t, resource.TestCase{
