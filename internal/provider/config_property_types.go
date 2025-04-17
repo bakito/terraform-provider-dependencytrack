@@ -33,5 +33,5 @@ type configPropertyModel struct {
 }
 
 func configPropertyID(cp dtrack.ConfigProperty) string {
-	return fmt.Sprintf("%s_%s", cp.GroupName, strings.ReplaceAll(cp.PropertyName, ".", "-"))
+	return fmt.Sprintf("%s_%s", cp.GroupName, strings.ReplaceAll(cp.Name, ".", "-"))
 }

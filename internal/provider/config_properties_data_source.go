@@ -74,9 +74,7 @@ func (d *configPropertiesDataSource) Schema(_ context.Context, _ datasource.Sche
 func (d *configPropertiesDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state configPropertiesDataSourceModel
 
-	properties, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.ConfigProperty], error) {
-		return d.client.ConfigProperty.GetAllConfigProperties(ctx, po)
-	})
+	properties, err := d.client.Config.GetAll(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read DependencyTrack Config Properties Groups",
@@ -90,9 +88,9 @@ func (d *configPropertiesDataSource) Read(ctx context.Context, _ datasource.Read
 		configPropertyState := configPropertyModel{
 			ID:    types.StringValue(configPropertyID(property)),
 			Group: types.StringValue(property.GroupName),
-			Name:  types.StringValue(property.PropertyName),
-			Type:  types.StringValue(property.PropertyType),
-			Value: types.StringValue(property.PropertyValue),
+			Name:  types.StringValue(property.Name),
+			Type:  types.StringValue(property.Type),
+			Value: types.StringValue(property.Value),
 		}
 
 		state.ConfigProperties = append(state.ConfigProperties, configPropertyState)
