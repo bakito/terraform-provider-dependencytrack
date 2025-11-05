@@ -98,7 +98,7 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 	properties, err := r.client.Config.GetAll(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading DependencyTrack Configuration Properties",
+			" Configuration Properties",
 			"Could not read DependencyTrack Configuration Properties: "+err.Error(),
 		)
 		return

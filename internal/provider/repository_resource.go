@@ -142,7 +142,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		if existing.Identifier == plan.Identifier.ValueString() &&
 			existing.Type == dtrack.RepositoryType(plan.Type.ValueString()) {
 			resp.Diagnostics.AddError(
-				"Error creating team",
+				"Error creating repository",
 				fmt.Sprintf("A repository with identifier %q exists already with UUID %q",
 					plan.Identifier.ValueString(), existing.UUID.String()),
 			)
@@ -201,7 +201,7 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading DependencyTrack Repositories",
-			"Could not read DependencyTrack repositories: "+err.Error(),
+			"Could not read DependencyTrack Repositories: "+err.Error(),
 		)
 		return
 	}

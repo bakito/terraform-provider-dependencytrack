@@ -186,8 +186,8 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	team, err := r.client.Team.Get(ctx, uuid.MustParse(state.ID.ValueString()))
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading DependencyTrack Repositories",
-			"Could not read DependencyTrack repositories: "+err.Error(),
+			"Error Reading DependencyTrack Teams",
+			"Could not read DependencyTrack Teams: "+err.Error(),
 		)
 		return
 	}
